@@ -106,12 +106,13 @@ class UNetResDecoder(nn.Module):
         """
         lres_input = skips[-1]
         seg_outputs = []
-        for s in range(len(self.stages)):
-            x = self.transpconvs[s](lres_input)
-            x = torch.cat((x, skips[-(s + 2)]), 1)
-            x = self.stages[s](x)
+        for  s, val in enumerate(zip(self.stages, self.transpconvs, self.seg_layers)):
+            stage, transp, seg_layer = val
+            x = transp(lres_input)
+            x = torch.cat((x, skips[-(s+2)]), 1)
+            x = stage(x)
             if self.deep_supervision:
-                seg_outputs.append(self.seg_layers[s](x))
+                seg_outputs.append(seg_layer(x))
             elif s == (len(self.stages) - 1):
                 seg_outputs.append(self.seg_layers[-1](x))
             lres_input = x
@@ -120,7 +121,7 @@ class UNetResDecoder(nn.Module):
         seg_outputs = seg_outputs[::-1]
 
         if not self.deep_supervision:
-            r = seg_outputs[0]
+            r = [seg_outputs[0]]
         else:
             r = seg_outputs
         return r

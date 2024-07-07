@@ -105,16 +105,6 @@ class UNetDecoder(nn.Module):
         """
         lres_input = skips[-1]
         seg_outputs = []
-        # for s in range(len(self.stages)):
-        #     x = self.transpconvs[s](lres_input)
-        #     x = torch.cat((x, skips[-(s+2)]), 1)
-        #     x = self.stages[s](x)
-        #     if self.deep_supervision:
-        #         seg_outputs.append(self.seg_layers[s](x))
-        #     elif s == (len(self.stages) - 1):
-        #         seg_outputs.append(self.seg_layers[-1](x))
-        #     lres_input = x
-
         for  s, val in enumerate(zip(self.stages, self.transpconvs, self.seg_layers)):
             stage, transp, seg_layer = val
             x = transp(lres_input)
@@ -129,10 +119,10 @@ class UNetDecoder(nn.Module):
         # invert seg outputs so that the largest segmentation prediction is returned first
         seg_outputs = seg_outputs[::-1]
 
-        #if not self.deep_supervision:
-        r = seg_outputs[0]
-        # else:
-        #     r = seg_outputs
+        if not self.deep_supervision:
+            r = [seg_outputs[0]]
+        else:
+            r = seg_outputs
         return r
 
     def compute_conv_feature_map_size(self, input_size):

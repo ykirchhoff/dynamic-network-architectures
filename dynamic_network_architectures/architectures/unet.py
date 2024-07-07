@@ -58,7 +58,7 @@ class PlainConvUNet(nn.Module):
                                    nonlin_first=nonlin_first)
 
     def forward(self, x):
-        skips = self.encoder(x)
+        skips: List[float] = self.encoder(x)
         return self.decoder(skips)
 
     def compute_conv_feature_map_size(self, input_size):
@@ -171,7 +171,7 @@ class ResidualUNet(nn.Module):
         self.decoder = UNetResDecoder(self.encoder, num_classes, n_conv_per_stage_decoder, deep_supervision)
 
     def forward(self, x):
-        skips = self.encoder(x)
+        skips: List[float] = self.encoder(x)
         return self.decoder(skips)
 
     def compute_conv_feature_map_size(self, input_size):
