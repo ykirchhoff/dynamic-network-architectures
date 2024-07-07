@@ -75,19 +75,25 @@ class BasicBlockD(nn.Module):
 
         # Stochastic Depth
         self.apply_stochastic_depth = False if stochastic_depth_p == 0.0 else True
-        if self.apply_stochastic_depth:
-            self.drop_path = DropPath(drop_prob=stochastic_depth_p)
+        self.drop_path = DropPath(drop_prob=stochastic_depth_p)
+        #if self.apply_stochastic_depth:
+        #    print('BasicBlockD apply_stochastic_depth')
+        #    self.drop_path = DropPath(drop_prob=stochastic_depth_p)
 
         # Squeeze Excitation
         self.apply_se = squeeze_excitation
         if self.apply_se:
-            self.squeeze_excitation = SqueezeExcite(self.output_channels, conv_op,
+            print('BasicBlockD apply_se')
+        self.squeeze_excitation = SqueezeExcite(self.output_channels, conv_op, ## can'T load weights
                                                     rd_ratio=squeeze_excitation_reduction_ratio, rd_divisor=8)
 
         has_stride = (isinstance(stride, int) and stride != 1) or any([i != 1 for i in stride])
         requires_projection = (input_channels != output_channels)
 
+        print('BasicBlockD SKIP before')
+        self.skip = nn.Sequential(nn.Identity())
         if has_stride or requires_projection:
+            print('BasicBlockD SKIP')
             ops = []
             if has_stride:
                 ops.append(get_matching_pool_op(conv_op=conv_op, adaptive=False, pool_type='avg')(stride, stride))
@@ -98,8 +104,8 @@ class BasicBlockD(nn.Module):
                                         )
                 )
             self.skip = nn.Sequential(*ops)
-        else:
-            self.skip = lambda x: x
+        #else:
+        #    self.skip = lambda x: x
 
     def forward(self, x):
         residual = self.skip(x)

@@ -97,7 +97,7 @@ class UNetDecoder(nn.Module):
         self.transpconvs = nn.ModuleList(transpconvs)
         self.seg_layers = nn.ModuleList(seg_layers)
 
-    def forward(self, skips):
+    def forward(self, skips: List[float]):
         """
         we expect to get the skips in the order they were computed, so the bottleneck should be the last entry
         :param skips:
@@ -105,12 +105,23 @@ class UNetDecoder(nn.Module):
         """
         lres_input = skips[-1]
         seg_outputs = []
-        for s in range(len(self.stages)):
-            x = self.transpconvs[s](lres_input)
+        # for s in range(len(self.stages)):
+        #     x = self.transpconvs[s](lres_input)
+        #     x = torch.cat((x, skips[-(s+2)]), 1)
+        #     x = self.stages[s](x)
+        #     if self.deep_supervision:
+        #         seg_outputs.append(self.seg_layers[s](x))
+        #     elif s == (len(self.stages) - 1):
+        #         seg_outputs.append(self.seg_layers[-1](x))
+        #     lres_input = x
+
+        for  s, val in enumerate(zip(self.stages, self.transpconvs, self.seg_layers)):
+            stage, transp, seg_layer = val
+            x = transp(lres_input)
             x = torch.cat((x, skips[-(s+2)]), 1)
-            x = self.stages[s](x)
+            x = stage(x)
             if self.deep_supervision:
-                seg_outputs.append(self.seg_layers[s](x))
+                seg_outputs.append(seg_layer(x))
             elif s == (len(self.stages) - 1):
                 seg_outputs.append(self.seg_layers[-1](x))
             lres_input = x
@@ -118,10 +129,10 @@ class UNetDecoder(nn.Module):
         # invert seg outputs so that the largest segmentation prediction is returned first
         seg_outputs = seg_outputs[::-1]
 
-        if not self.deep_supervision:
-            r = seg_outputs[0]
-        else:
-            r = seg_outputs
+        #if not self.deep_supervision:
+        r = seg_outputs[0]
+        # else:
+        #     r = seg_outputs
         return r
 
     def compute_conv_feature_map_size(self, input_size):
