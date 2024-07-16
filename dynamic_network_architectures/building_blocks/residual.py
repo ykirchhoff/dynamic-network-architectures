@@ -85,10 +85,8 @@ class BasicBlockD(nn.Module):
         has_stride = (isinstance(stride, int) and stride != 1) or any([i != 1 for i in stride])
         requires_projection = (input_channels != output_channels)
 
-        print('BasicBlockD SKIP before')
         self.skip = nn.Sequential(nn.Identity())
         if has_stride or requires_projection:
-            print('BasicBlockD SKIP')
             ops = []
             if has_stride:
                 ops.append(get_matching_pool_op(conv_op=conv_op, adaptive=False, pool_type='avg')(stride, stride))

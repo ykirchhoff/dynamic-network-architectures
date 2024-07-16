@@ -114,7 +114,7 @@ class ResidualEncoderUNet(nn.Module):
         self.decoder = UNetDecoder(self.encoder, num_classes, n_conv_per_stage_decoder, deep_supervision)
 
     def forward(self, x):
-        skips: List[float] = self.encoder(x)
+        skips: List[torch.Tensor] = self.encoder(x)
         return self.decoder(skips)
 
     def compute_conv_feature_map_size(self, input_size):
