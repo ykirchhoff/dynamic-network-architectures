@@ -97,7 +97,7 @@ class UNetDecoder(nn.Module):
         self.transpconvs = nn.ModuleList(transpconvs)
         self.seg_layers = nn.ModuleList(seg_layers)
 
-    def forward(self, skips: List[torch.Tensor]]):
+    def forward(self, skips: List[torch.Tensor]):
         """
         we expect to get the skips in the order they were computed, so the bottleneck should be the last entry
         :param skips:
