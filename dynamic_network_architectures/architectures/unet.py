@@ -58,7 +58,7 @@ class PlainConvUNet(nn.Module):
                                    nonlin_first=nonlin_first)
 
     def forward(self, x):
-        skips: List[float] = self.encoder(x)
+        skips: List[Tensor] = self.encoder(x)
         return self.decoder(skips)
 
     def compute_conv_feature_map_size(self, input_size):
